@@ -1,0 +1,295 @@
+---
+title: "Machine Learning for Social Science"
+subtitle: "Introduction, R & RStudio"
+output: 
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+tutorial:
+  id: "introduction"
+  version: 0.5
+---
+
+## Info
+
+The R language is a free, open-source software environment for statistical computing and graphics. RStudio is an open-source integrated development environment (IDE) for R that adds many features and productivity tools for R such as a workspace browser and data viewer, and supporting syntax highlighting, code completion, and smart indentation. You can download and install R from the Comprehensive R Archive Network (CRAN,
+http://www.r-project.org) and install RStudio from http://www.rstudio.com/download.
+
+The home page for the R project (http://r-project.org) is the best starting place for information about the software. It includes links to CRAN, which features pre-compiled binaries as well as source code for R, add-on packages, documentation (including manuals, frequently asked questions, and the R newsletter) as well as general background information.
+
+You can consult the R FAQ (https://cran.r-project.org/doc/FAQ/R-FAQ.html, frequently asked questions) list. RStudio provides a curated guide to resources for learning R and its extensions.
+
+## Setup
+
+We start by first installing some packages that we will need throughout this notebook. The function install.packages() can be used to download and install packages. Don't forget to use quotes. You can specify multiple packages together separating by commas. Alternatively, RStudio provides an easy-to-use Packages tab to install and load packages.
+
+```{r}
+# install.packages("tidyverse")
+# install.packages("GGally")
+# install.packages("mlbench")
+```
+
+Besides installing the packages, they also have to be loaded in order to be operational. The library() function will load an installed package. You only need to install a package once, but you need to reload it every time you start a new session. The require() function tests whether a package is available, which loads the library if it is installed and generates a warning message if it is not (as opposed to library(), which returns an error). 
+
+```{r}
+library(learnr)
+library(tidyverse)
+library(GGally)
+library(mlbench)
+```
+
+You can update the version of R by installing the package "installr" and using the function "updateR()" as follows:
+
+```{r}
+#library(installr)
+#updateR()
+```
+
+## R-Basics, help & packages
+
+This section lists some useful functions when working with R. First of all, it is good practice to cite R whenever it was used in the research process. `citation()` displays the proper way to cite R, whereas `citation("packagename")` can be used when citing R packages.
+
+```{r}
+citation()
+citation("ggplot2")
+```
+
+Typically, one of the first things to do is specifying your working directory. The following functions can be used to display (`getwd()`) and set (`setwd()`) the working directory and to list its contents (`dir()`). 
+
+Keep in mind that R only accepts paths with forward slashes. Here is an example command `setwd("C:/Users/myid/myfolder")`.
+
+```{r}
+getwd()
+# setwd("path")
+dir()
+```
+
+To get familiar with R's help system, we can explore the documentation for the function `help()`. This is equivalent to `help(help)`
+
+```{r}
+help()
+```
+
+The documentation for global R options.
+
+```{r}
+help(options)
+```
+
+help.start() provides a set of online manuals. Use `help.search()` to search the help system and look up entries by description.
+
+```{r}
+help.start()
+help.search("linear models")
+help.search("glm")
+```
+
+The help system is invoked using either the ? or help() commands as "?function" or "help(function)", where \function" is the name of the function of interest. Alternatively, the Help tab in RStudio can be used to access the help system.
+
+Running the command library(help = "PKGNAME") where \PKGNAME" is the name of the package will display information about an installed package. The session info() function from the sessioninfo package provides improved reporting version information about R as well as details of loaded packages.
+
+```{r}
+library(help="tidyverse")
+sessioninfo::session_info()
+```
+
+
+Different package authors may choose the same name for functions that exist within base R (or within other packages).
+This will cause the other function or object to be masked. This can sometimes lead to confusion, when the expected version of a function is not the one that is called.
+The find() function can be used to determine where in the environment (workspace) a given object can be found.
+
+```{r}
+find("mean")
+```
+
+Examples of many functions are available using the example() function. For example we can use the command example(plot) which will run the examples in the plot() function help page and print the graphs one by one if you press enter.
+
+```{r}
+example(mean)
+example(plot)
+```
+
+Sometimes it is desirable to remove a package from the workspace. For example, a package might define a function with the same name as an existing function.Packages can be detached using the syntax detach(package:PKGNAME) , where \PKGNAME" is the name of the package. 
+
+Objects with the same name that appear in multiple places in the environment can be accessed using the location::objectname syntax. As an example, to access the mean() function from the base package, the user would specify base::mean() instead
+of mean(). It is sometimes preferable to reference a function or object in this way rather than loading the package.
+
+
+## Special commands 
+
+Some commands (e.g., if ) are reserved, so ?if will not generate the desired documentation. Running ?"if" will work (see also ?Reserved and ?Control). Other reserved words include else , repeat , while , function , for , in , next ,
+break , TRUE , FALSE , NULL , Inf , NaN , and NA.
+
+
+## Working with data
+
+Data sets are often stored in a data.frame , which is a special type of list that is more general than a matrix .
+This rectangular object can be thought of as a two-dimensional array with columns of vectors of the same length, but of possibly different types. In this notebook, we use the Boston Housing data set. "This dataset contains information collected by the U.S Census Service concerning housing in the area of Boston Mass. It was obtained from the StatLib archive (http://lib.stat.cmu.edu/datasets/boston), and has been used extensively throughout the literature to benchmark algorithms."
+
+Source: https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html
+
+Load the dataset using data() and we can use `?` to get some information about this dataset.
+
+```{r}
+data(BostonHousing2)
+boston <- BostonHousing2
+```
+
+```{r}
+?BostonHousing2
+```
+
+The following functions can be used to get a first impression of the data. str() compactly displays the internal structure whereas head(), tail() prints few rows from the beginning and end of the dataset. You can use dim() to check the dimension of the dataset.
+
+```{r}
+str(boston)
+head(boston)
+tail(boston)
+dim(boston)
+```
+
+Note that we can use `View()`, i.e. the data viewer, in connection with conditions on rows and columns to display only certain pieces of the whole data frame. The row and column details are specified inside "[,]" separated by commas. For example here we print all rows except the first 500 and only the first and second column. 
+
+```{r}
+View(boston)
+View(boston[-(1:500), 1:2])
+```
+
+You can also view the dataset by going to the Global Environment from the top right panel.
+
+Using index notation to access only specific variables or observations is an important tool as it can be used in conjunction with many different functions. It is therefore worthwhile to consider some basic examples. 
+
+```{r}
+boston[, 1]
+boston[, 1:5]
+boston[1:10, c(1:2,5)]
+```
+
+List all variable names of the Boston Housing data.
+
+```{r}
+names(boston)
+```
+
+Now we can access variables by using their names and the $-notation. This can be combined with conditional statements regarding rows to also filter specific observations. Here is an example where we filter the dataset with only the value 1 from the variable "chas".
+
+```{r}
+boston$medv
+boston$medv[1:10]
+boston$medv[boston$chas == 1]
+```
+
+We can also use subset() to return subsets of vectors, matrices or data frames which meet conditions. For example we subset the boston dataset to keep rows with age > 20 and only columns town, latitude and longitude.
+
+```{r}
+subset(boston, age > 20, select = c(town, lat, lon))
+```
+
+We can also draw random samples from our data set using the sample() comppand and store those in new objects.
+
+```{r}
+index <- sample(1:nrow(boston), 0.75*nrow(boston))
+subset <- boston[index,]
+nrow(subset)
+```
+
+Finally, here is a `dplyr` approach at selecting rows and columns of the Boston housing dataset. One of the core packages of the tidyverse in the R programming language, `dplyr` is primarily a set of functions designed to enable dataframe manipulation in an intuitive, user-friendly way. Here we make use of the functions filter(), which is used to extract rows from a dataframe, based on conditions specified by a user; and select(), which is used to subset a dataframe by its columns.
+
+
+```{r}
+boston %>%
+  select(medv, chas) %>%
+  filter(chas == 1)
+```
+
+## Exploring data
+
+Basic descriptive statistics can be computed using `summary()`. 
+
+```{r}
+summary(boston$medv)
+```
+
+The class() function returns the classes to which an object belongs, while the methods() function displays all of the classes supported by a generic function.
+
+```{r}
+class(summary)
+methods(summary)
+```
+
+Note that summary() function is class-sensitive, i.e. here we get a different output depending on the class of the respective object i.e. it is better to apply summary() on numeric variables to get meaningful results, as "medv" is a numeric variable it makes sense to get the minimum, maximum, quatiles etc. whereas town being a character variables, summary doesn't provide meaningful output. 
+
+```{r}
+class(boston$medv)
+summary(boston$town)
+class(boston$town)
+```
+
+From `dplyr` here we make use of the functions group_by(), which allows you to perform any operation “by group” and summarize() (also spelled summarise()) to collapse values from a dataframe into a single summary. Some summary statistics for the value of owner-occupied homes grouped by the `chas` river indicator, now using `dplyr`. 
+
+```{r}
+boston %>% 
+  group_by(chas) %>%
+  summarise(mean(medv), var(medv), min(medv), max(medv))
+```
+
+Summary statistics again, now for selected towns.
+
+```{r}
+boston %>% 
+  filter(town %in% c("Cambridge", "Boston South Boston")) %>%
+  group_by(town) %>%
+  summarise(mean = mean(medv), variance = var(medv), IQR = IQR(medv), n = n())
+```
+
+## Plotting and visualizing data
+
+We learn how to visualize data using ggplot2. The ggplot2 package has become one of the most widely-used R packages.
+It implements the grammar of graphics, a coherent system for describing and building graphs. It is included in the tidyverse package. 
+
+ggplot() creates a coordinate system that you can add layers to. The first argument of ggplot() is the dataset to use in the graph. Other functions adds layers to your plot: like the function geom_point() creates the scatter plot. This function corresponds to the geometries layer. The graphing template is as follows:
+
+ggplot(data = <DATA>) +
+<GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+
+The mapping argument defines how variables in your dataset are mapped to visual properties. The mapping argument is always paired with aes(). The x and y arguments of aes() specify which variables to map to the x and y axes.
+
+Here is an example of creating boxplot via `qplot()`, separated by the `chas` dummy variable.
+
+```{r}
+qplot(chas, medv, data = boston, geom = "boxplot", fill = chas)
+```
+
+The previous boxplot with better labels, now using the `ggplot()` function.
+
+```{r}
+ggplot(boston) +
+  geom_boxplot(aes(x = chas, y = medv, fill = chas)) +
+  labs(x = "Charles River dummy", y = "Median home value") +
+  guides(fill = FALSE) +
+  theme_light()
+```
+
+If you have comparison groups defined by more than three categorical variables, you can use facet_wrap() or facet_grid(). Here is an example of a density plot of the median value of owner-occupied homes, faceted by the river dummy.
+
+```{r}
+ggplot(boston) +
+  geom_density(aes(x = medv), color = "red") +
+  geom_rug(aes(x = medv, y = 0), position = position_jitter(height = 0)) +
+  facet_grid(. ~ chas)
+```
+
+Grouped scatterplots of median home values and crime rates with overlayed loess curves.
+
+```{r}
+ggplot(boston) +
+  geom_point(aes(x = lstat, y = medv)) +
+  geom_smooth(aes(x = lstat, y = medv)) +
+  facet_grid(. ~ chas)
+```
+
+Finally, a scatterplot matrix using `ggpairs()` from the `GGally` package.
+
+```{r}
+ggpairs(boston[,c(5,7,14,19)], lower = list(continuous = "smooth_loess"))
+```
